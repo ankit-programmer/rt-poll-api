@@ -1,0 +1,45 @@
+{
+  "name": "rt-poll-api",
+  "version": "1.0.0",
+  "description": "APIs for real-time poll.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint . --fix",
+    "dev": "nodemon src/index.ts",
+    "debug": "nodemon --inspect src/index.ts",
+    "build": "npx tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tsconfig/node16": "^1.0.3",
+    "@types/amqplib": "^0.8.2",
+    "@types/cors": "^2.8.12",
+    "@types/luxon": "^3.1.0",
+    "@types/node": "^18.11.9",
+    "@types/redis": "^2.8.32",
+    "@types/response-time": "^2.3.5",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "eslint": "^8.26.0",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "cors": "^2.8.5",
+    "crc": "^4.1.1",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.2.0",
+    "helmet": "^6.0.0",
+    "luxon": "^3.1.0",
+    "redis": "^3.1.2",
+    "response-time": "^2.3.2",
+    "snappy": "^7.2.1",
+    "winston": "^3.8.2",
+    "winston-daily-rotate-file": "^4.7.1"
+  }
+}
