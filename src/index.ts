@@ -13,8 +13,8 @@ const app = express();
 
 app.use(responseTime(function (req: Request, res: Response, time: any) {
     var statId = (req.method + req.originalUrl).toLowerCase()
-        .replace(/[:.]/g, '')
-        .replace(/\//g, '_')
+    .replace(/[:.]/g, '')
+    .replace(/\//g, '_')
     logger.info(`${statId} - ${time}`)
 }));
 app.use(express.json());
@@ -31,8 +31,8 @@ app.get("/", function (req, res) {
 app.get("/ping", (req, res) => {
     return res.status(200).send("pong");
 })
-
 app.use(errorHandler);
+
 app.listen(PORT, () => {
     logger.info(`Listening on PORT : ${PORT}`);
 });

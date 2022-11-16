@@ -9,9 +9,7 @@ export type User = {
     emailVerified?: boolean,
     avatar?: string
 }
-db.settings({
-    ignoreUndefinedProperties: true
-});
+
 const collection = db.collection('users');
 export async function updateUser(id: string, { firstName, middleName, lastName, gender, email, emailVerified, avatar }: User) {
     const userRef = collection.doc(id);
@@ -37,8 +35,6 @@ export async function createUser(id: string, user: User) {
         email,
         emailVerified,
         avatar
-    }).catch(error=>{
-        console.log(error)
     });
 }
 
