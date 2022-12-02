@@ -52,7 +52,8 @@ function logger() {
     if (process.env.NODE_ENV === 'development') {
         return buildDevLogger(process.env.LOG_LEVEL);
     } else {
-        return buildProdLogger(process.env.LOG_LEVEL);
+        // return buildProdLogger(process.env.LOG_LEVEL);
+        return buildDevLogger(process.env.LOG_LEVEL);
     }
 
 }
