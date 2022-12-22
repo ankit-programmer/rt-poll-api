@@ -2,7 +2,8 @@ import express from 'express';
 import admin, { db } from '../configs/firebase';
 import { ApiError } from '../errors/api-error';
 import { authenticate } from '../middlewares/auth';
-import { createPoll, Poll, getPoll, getUserPoll, updatePoll } from '../models/poll';
+import poll from '../models/poll';
+import { Poll } from '../models/poll';
 import { getRandomNumber, getTimestamp } from '../utility';
 import { DateTime } from 'luxon';
 const router = express.Router();
@@ -13,9 +14,9 @@ router.route('/')
         let firebaseUser = res.locals.user;
         // If id is available return spacific poll otherwise return all poll of the user
         if (id) {
-            res.send(await getPoll(id as string))
+            res.send(await poll.getPoll(id as string))
         } else {
-            res.send(await getUserPoll(firebaseUser.uid));
+            res.send(await poll.getUserPoll(firebaseUser.uid));
         }
     })
     .patch(authenticate, async (req, res, next) => {
@@ -24,7 +25,7 @@ router.route('/')
         let body = req.body;
         if (!id) return next(new ApiError("id is required", 400));
         console.log(body);
-        let result = await updatePoll(id as string, body);
+        let result = await poll.updatePoll(id as string, body);
         res.send(result);
     })
     .post(authenticate, async (req, res, next) => {
@@ -48,13 +49,13 @@ router.route('/')
                 radio: (body?.setting?.radio == false) ? false : true
             }
         }
-        await createPoll(data);
+        await poll.createPoll(data);
         return res.status(201).send({
             "status": "ok",
             "message": "Poll Created Successfully!"
         })
 
-    })
+    });
 
 
 export default router;
