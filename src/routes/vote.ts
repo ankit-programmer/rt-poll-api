@@ -36,7 +36,6 @@ router.route('/:pollId')
 
     })
     .delete(authenticate, async (req, res, next) => {
-        // Remove my vote from this poll
         // Might not be allowed for some polls
         let firebaseUser = res.locals.user;
         const pollId = req.params.pollId;
