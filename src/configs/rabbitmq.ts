@@ -7,7 +7,7 @@ export type Channel = amqp.Channel;
 
 const RETRY_INTERVAL = 5000; // in millis
 const RABBIT_CONNECTION_STRING = process.env.RABBIT_CONNECTION_STRING || '';
-logger.info(RABBIT_CONNECTION_STRING);
+
 class RabbitConnection extends EventEmitter {
     private static instance: RabbitConnection;
     private gracefulClose: boolean = false;
