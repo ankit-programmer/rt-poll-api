@@ -1,5 +1,5 @@
+import "./startup/setupenv";
 import express, { Request, Response } from 'express';
-require('dotenv').config();
 import cors from 'cors';
 import helmet from 'helmet';
 import logger from "./logger";

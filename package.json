@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --fix",
     "dev": "nodemon src/index.ts",
+    "dev-consumer": "nodemon src/consumers/index.ts",
     "debug": "nodemon --inspect src/index.ts",
     "build": "npx tsc"
   },
@@ -16,6 +17,7 @@
     "@tsconfig/node16": "^1.0.3",
     "@types/amqplib": "^0.8.2",
     "@types/cors": "^2.8.12",
+    "@types/lodash": "^4.14.191",
     "@types/luxon": "^3.1.0",
     "@types/node": "^18.11.9",
     "@types/redis": "^2.8.32",
@@ -35,6 +37,7 @@
     "express": "^4.18.2",
     "firebase-admin": "^11.2.0",
     "helmet": "^6.0.0",
+    "lodash": "^4.17.21",
     "luxon": "^3.1.0",
     "redis": "^4.5.1",
     "redis-redisearch": "^1.0.1",

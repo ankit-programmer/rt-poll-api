@@ -11,13 +11,22 @@ export enum compressor {
 }
 const REDIS_CONNECTION_STRING = process.env.REDIS_CONNECTION_STRING;
 if (!REDIS_CONNECTION_STRING) throw new Error("REDIS_CONNECTION_STRING is required");
-
 const client = createClient({
     url: REDIS_CONNECTION_STRING
 })
-client.connect();
+try {
+    client.connect();
+
+} catch (error) {
+    logger.error(error);
+    client.connect();
+}
 client.on("ready", () => {
     logger.info("Connection Established to Redis!");
+})
+
+client.on("error", (error) => {
+    logger.error(error)
 })
 async function cget(key: string, lib: compressor = compressor.SNAPPY): Promise<string | null> {
     try {

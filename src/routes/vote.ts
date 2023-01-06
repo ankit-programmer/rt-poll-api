@@ -6,13 +6,17 @@ import poll from '../models/poll';
 import { Poll } from '../models/poll';
 import { getRandomNumber, getTimestamp } from '../utility';
 import { DateTime } from 'luxon';
+import producer from '../configs/rabbit-producer'
 import voteModel from '../models/vote';
 const router = express.Router();
+const USER_VOTE_QUEUE = process.env.VOTE_QUEUE || "user-vote";
 
 router.route('/:pollId')
     .get(authenticate, async (req, res, next) => {
         const pollId = req.params.pollId;
-        const votes = await voteModel.getVote(pollId);
+        let firebaseUser = res.locals.user;
+        // const votes = await voteModel.getVote(pollId);
+        const votes = await voteModel.getUserVote(firebaseUser.uid, pollId);
         return res.send(votes);
     })
     .patch(authenticate, async (req, res, next) => {
@@ -26,6 +30,12 @@ router.route('/:pollId')
         let firebaseUser = res.locals.user;
 
         await voteModel.addVote(firebaseUser.uid, pollId, optionId).then(value => {
+            producer.publishToQueue(USER_VOTE_QUEUE, {
+                event: 'add',
+                uid: firebaseUser.uid,
+                pollId,
+                optionId
+            })
             return res.status(201).send({
                 "status": "ok"
             });
@@ -40,6 +50,11 @@ router.route('/:pollId')
         let firebaseUser = res.locals.user;
         const pollId = req.params.pollId;
         await voteModel.removeVote(firebaseUser?.uid, pollId).then(value => {
+            producer.publishToQueue(USER_VOTE_QUEUE, {
+                event: 'add',
+                uid: firebaseUser.uid,
+                pollId
+            })
             return res.status(200).send({
                 "status": "ok"
             })

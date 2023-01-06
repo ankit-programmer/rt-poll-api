@@ -1,5 +1,6 @@
 import redis from '../configs/redis';
 import { ApiError } from '../errors/api-error';
+import { UserVote } from './user';
 import pollModel from './poll';
 type Vote = {
     pollId: string,
@@ -9,7 +10,8 @@ type Vote = {
             count: number,
             users?: string[]
         }
-    }
+    },
+    selected?: string
 }
 class VoteModel {
     /**
@@ -70,6 +72,16 @@ class VoteModel {
             }
             result.total += count;
         })
+        return result;
+    }
+    async getUserVote(uid: string, pollId: string) {
+        const userVote = new UserVote(uid, pollId).get();
+        const pollVote = this.getVote(pollId);
+        let result;
+        await Promise.all([userVote, pollVote]).then(([userVote, pollVote]) => {
+            pollVote.selected = userVote?.selected;
+            result = pollVote;
+        });
         return result;
     }
 
