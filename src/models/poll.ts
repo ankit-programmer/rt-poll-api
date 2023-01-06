@@ -79,7 +79,7 @@ export class CachedPoll {
             case "getPoll":
                 return async function (id: string) {
                     // TODO:PRODUCTION Increase expiry from 10M to 1 Day
-                    const cacheKey = `poll-${id}`;
+                    const cacheKey = `poll:${id}`;
                     const cachedPoll = await redis.get(cacheKey);
                     if (cachedPoll) return JSON.parse(cachedPoll);
                     const data = await target[prop](...arguments);
@@ -89,7 +89,7 @@ export class CachedPoll {
                 break;
             case "getUserPoll":
                 return async function (uid: string) {
-                    const cacheKey = `poll-${uid}`;
+                    const cacheKey = `poll:user:${uid}`;
                     const cachedPoll = await redis.get(cacheKey);
                     if (cachedPoll) return JSON.parse(cachedPoll as string);
                     const data = await target[prop](...arguments);
@@ -99,7 +99,7 @@ export class CachedPoll {
                 break;
             case "updatePoll":
                 return async function (id: string) {
-                    const cacheKey = `poll-${id}`
+                    const cacheKey = `poll:${id}`
                     redis.del(cacheKey);
                     return target[prop](arguments);
                 }

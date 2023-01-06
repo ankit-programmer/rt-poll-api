@@ -1,11 +1,6 @@
 import express from 'express';
-import admin, { db } from '../configs/firebase';
 import { ApiError } from '../errors/api-error';
 import { authenticate } from '../middlewares/auth';
-import poll from '../models/poll';
-import { Poll } from '../models/poll';
-import { getRandomNumber, getTimestamp } from '../utility';
-import { DateTime } from 'luxon';
 import producer from '../configs/rabbit-producer'
 import voteModel from '../models/vote';
 const router = express.Router();
@@ -35,7 +30,7 @@ router.route('/:pollId')
                 uid: firebaseUser.uid,
                 pollId,
                 optionId
-            })
+            });
             return res.status(201).send({
                 "status": "ok"
             });
