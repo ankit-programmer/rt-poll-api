@@ -1,6 +1,7 @@
 import express from 'express';
 import { ApiError } from '../errors/api-error';
 import { authenticate } from '../middlewares/auth';
+import redis from '../configs/redis';
 import producer from '../configs/rabbit-producer'
 import voteModel from '../models/vote';
 const router = express.Router();
@@ -23,7 +24,6 @@ router.route('/:pollId')
         const optionId = req.query?.optionId as string;
         const pollId = req.params.pollId;
         let firebaseUser = res.locals.user;
-
         await voteModel.addVote(firebaseUser.uid, pollId, optionId).then(value => {
             producer.publishToQueue(USER_VOTE_QUEUE, {
                 event: 'add',
@@ -31,6 +31,14 @@ router.route('/:pollId')
                 pollId,
                 optionId
             });
+
+            redis.publish(`public:poll:${pollId}`, JSON.stringify({
+                event: 'add',
+                uid: firebaseUser.uid,
+                pollId,
+                optionId
+            })
+            )
             return res.status(201).send({
                 "status": "ok"
             });
@@ -46,10 +54,15 @@ router.route('/:pollId')
         const pollId = req.params.pollId;
         await voteModel.removeVote(firebaseUser?.uid, pollId).then(value => {
             producer.publishToQueue(USER_VOTE_QUEUE, {
-                event: 'add',
+                event: 'remove',
                 uid: firebaseUser.uid,
                 pollId
-            })
+            });
+            redis.publish(`public:poll:${pollId}`, JSON.stringify({
+                event: 'remove',
+                uid: firebaseUser.uid,
+                pollId
+            }))
             return res.status(200).send({
                 "status": "ok"
             })
