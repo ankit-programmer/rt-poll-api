@@ -102,8 +102,16 @@ export class CachedPoll {
                 return async function (id: string) {
                     const cacheKey = `poll:${id}`
                     redis.del(cacheKey);
-                    return target[prop](arguments);
+                    return target[prop](...arguments);
                 }
+                break;
+            case "createPoll":
+                return async function (poll: Poll) {
+                    const cacheKey = `poll:user:${poll.owner}`;
+                    redis.del(cacheKey);
+                    return target[prop](...arguments);
+                }
+                break;
             default:
                 return Reflect.get(target, prop, receiver);
                 break;
