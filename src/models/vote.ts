@@ -2,6 +2,7 @@ import redis from '../configs/redis';
 import { ApiError } from '../errors/api-error';
 import { UserVote } from './user';
 import pollModel from './poll';
+import logger from '../logger';
 type Vote = {
     pollId: string,
     total: number,
@@ -101,7 +102,17 @@ class VoteModel {
             const key = `vote:${pollId}:${id}`;
             removeTask.push(redis.HDEL(key, uid));
         }
-        return await Promise.all(removeTask);
+        const result = await Promise.all(removeTask).catch((reason) => {
+            logger.error(reason);
+            return [];
+        });
+        let removedOption = null;
+        result.forEach((removed: number, index: number) => {
+            if (removed && index >= 1) {
+                removedOption = optionIds[index - 1];
+            }
+        });
+        return removedOption;
     }
     /**
      * 

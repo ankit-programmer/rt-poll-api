@@ -52,20 +52,29 @@ router.route('/:pollId')
         // Might not be allowed for some polls
         let firebaseUser = res.locals.user;
         const pollId = req.params.pollId;
-        await voteModel.removeVote(firebaseUser?.uid, pollId).then(value => {
-            producer.publishToQueue(USER_VOTE_QUEUE, {
-                event: 'remove',
-                uid: firebaseUser.uid,
-                pollId
-            });
-            redis.publish(`public:poll:${pollId}`, JSON.stringify({
-                event: 'remove',
-                uid: firebaseUser.uid,
-                pollId
-            }))
-            return res.status(200).send({
-                "status": "ok"
-            })
+        await voteModel.removeVote(firebaseUser?.uid, pollId).then(removedOption => {
+            console.log(removedOption);
+            if (removedOption) {
+                producer.publishToQueue(USER_VOTE_QUEUE, {
+                    event: 'remove',
+                    uid: firebaseUser.uid,
+                    optionId: removedOption,
+                    pollId
+                });
+                redis.publish(`public:poll:${pollId}`, JSON.stringify({
+                    event: 'remove',
+                    uid: firebaseUser.uid,
+                    optionId: removedOption,
+                    pollId
+                }))
+                return res.status(200).send({
+                    "status": "ok"
+                })
+            } else {
+                return res.status(400).send({
+                    "message": "You havn't voted on this poll"
+                })
+            }
         }).catch(error => {
             next(new ApiError(error.message, 500));
         })
