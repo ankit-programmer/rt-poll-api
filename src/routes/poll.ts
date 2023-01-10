@@ -14,7 +14,9 @@ router.route('/')
         let firebaseUser = res.locals.user;
         // If id is available return spacific poll otherwise return all poll of the user
         if (id) {
-            res.send(await poll.getPoll(id as string))
+            const data = await poll.getPoll(id as string);
+            if(!data) return res.status(404).send("Invalid poll id");
+            res.send(data);
         } else {
             res.send(await poll.getUserPoll(firebaseUser.uid));
         }

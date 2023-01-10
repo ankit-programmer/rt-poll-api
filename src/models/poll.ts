@@ -83,6 +83,7 @@ export class CachedPoll {
                     const cachedPoll = await redis.get(cacheKey);
                     if (cachedPoll) return JSON.parse(cachedPoll);
                     const data = await target[prop](...arguments);
+                    if (!data) return undefined;
                     await redis.set(cacheKey, JSON.stringify(data), { EX: 360 });
                     return data;
                 }
