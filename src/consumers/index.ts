@@ -68,9 +68,17 @@ class Consumer {
 
 function main() {
     const consumerName: string = args['name'] || args['n'];
-    if (invalidConsumerName(consumerName))
-        return logger.error(`Valid consumer name is required\n\nAvailable consumers: \n${getAvailableConsumers()}`);
-    new Consumer((consumers as any)[consumerName]);
+    if (!consumerName) {
+        const names = Object.keys(consumers);
+        for (const name of names) {
+            new Consumer((consumers as any)[name]);
+        }
+    } else {
+
+        if (invalidConsumerName(consumerName))
+            return logger.error(`Valid consumer name is required\n\nAvailable consumers: \n${getAvailableConsumers()}`);
+        new Consumer((consumers as any)[consumerName]);
+    }
 }
 
 main();
