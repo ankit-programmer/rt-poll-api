@@ -3,7 +3,7 @@ import { ApiError } from '../errors/api-error';
 import { authenticate } from '../middlewares/auth';
 import redis from '../configs/redis';
 import producer from '../configs/rabbit-producer'
-import voteModel from '../models/vote';
+import voteModel, { VotePublisher } from '../models/vote';
 const router = express.Router();
 const USER_VOTE_QUEUE = process.env.VOTE_QUEUE || "user-vote";
 
@@ -24,21 +24,8 @@ router.route('/:pollId')
         const optionId = req.query?.optionId as string;
         const pollId = req.params.pollId;
         let firebaseUser = res.locals.user;
-        await voteModel.addVote(firebaseUser.uid, pollId, optionId).then(value => {
-            producer.publishToQueue(USER_VOTE_QUEUE, {
-                event: 'add',
-                uid: firebaseUser.uid,
-                pollId,
-                optionId
-            });
-
-            redis.publish(`public:poll:${pollId}`, JSON.stringify({
-                event: 'add',
-                uid: firebaseUser.uid,
-                pollId,
-                optionId
-            })
-            )
+        await voteModel.addVote(firebaseUser.uid, pollId, optionId).then(async (value) => {
+            await new VotePublisher().voteAdded(pollId, firebaseUser?.uid, optionId);
             return res.status(201).send({
                 "status": "ok"
             });
@@ -52,21 +39,10 @@ router.route('/:pollId')
         // Might not be allowed for some polls
         let firebaseUser = res.locals.user;
         const pollId = req.params.pollId;
-        await voteModel.removeVote(firebaseUser?.uid, pollId).then(removedOption => {
+        await voteModel.removeVote(firebaseUser?.uid, pollId).then(async (removedOption) => {
             console.log(removedOption);
             if (removedOption) {
-                producer.publishToQueue(USER_VOTE_QUEUE, {
-                    event: 'remove',
-                    uid: firebaseUser.uid,
-                    optionId: removedOption,
-                    pollId
-                });
-                redis.publish(`public:poll:${pollId}`, JSON.stringify({
-                    event: 'remove',
-                    uid: firebaseUser.uid,
-                    optionId: removedOption,
-                    pollId
-                }))
+                await new VotePublisher().voteRemoved(pollId, firebaseUser?.uid, removedOption);
                 return res.status(200).send({
                     "status": "ok"
                 })

@@ -48,8 +48,24 @@ export class PollModel {
         return new Set(ids).size === ids.length;
 
     }
-
-
+    /**
+     * Move polls created by one user to another user
+     * @param fromUid 
+     * @param toUid 
+     */
+    async movePoll(fromUid: string, toUid: string) {
+        const batch = db.batch();
+        const pollsRef = collection.where('owner', '==', fromUid);
+        const polls = await pollsRef.get();
+        if (polls.empty) return [];
+        const movedPolls: string[] = [];
+        polls.forEach(poll => {
+            movedPolls.push(poll.id);
+            batch.update(poll.ref, { owner: toUid });
+        });
+        await batch.commit();
+        return movedPolls;
+    }
 
     async getPoll(id: string): Promise<Poll> {
         const pollRef = collection.doc(id);

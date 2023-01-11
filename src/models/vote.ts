@@ -3,6 +3,7 @@ import { ApiError } from '../errors/api-error';
 import { UserVote } from './user';
 import pollModel from './poll';
 import logger from '../logger';
+import producer from '../configs/rabbit-producer';
 type Vote = {
     pollId: string,
     total: number,
@@ -76,7 +77,7 @@ class VoteModel {
         return result;
     }
     async getUserVote(uid: string, pollId: string) {
-        const userVote = new UserVote(uid, pollId).get();
+        const userVote = new UserVote(uid).get(pollId);
         const pollVote = this.getVote(pollId);
         let result;
         await Promise.all([userVote, pollVote]).then(([userVote, pollVote]) => {
@@ -106,7 +107,7 @@ class VoteModel {
             logger.error(reason);
             return [];
         });
-        let removedOption = null;
+        let removedOption: string = "";
         result.forEach((removed: number, index: number) => {
             if (removed && index >= 1) {
                 removedOption = optionIds[index - 1];
@@ -114,17 +115,62 @@ class VoteModel {
         });
         return removedOption;
     }
+
+    async isVoted(pollId: string, uid: string) {
+        const setKey = `vote:${pollId}`;
+        return await redis.sIsMember(setKey, uid);
+    }
     /**
      * 
      * @param uid User who wants to change their vote
      * @param pollId Poll on which user want to change vote
      * @param optionId New option on which user want to vote
+     * 
      */
     async changeVote(uid: string, pollId: string, optionId: string) {
         // Get the poll data
         // Check if changing vote is allowed
         // Remove previous vote of the user
         // Add new vote to the poll
+    }
+
+    async moveVote(pollId: string, oldUser: string, newUser: string) {
+        const newUserVote = await this.isVoted(pollId, newUser);
+        const selectedOption = await this.removeVote(oldUser, pollId);
+        if (selectedOption) {
+            await new VotePublisher().voteRemoved(pollId, oldUser, selectedOption);
+        }
+        if (!newUserVote && selectedOption) {
+            await this.addVote(newUser, pollId, selectedOption);
+            await new VotePublisher().voteAdded(pollId, newUser, selectedOption);
+        }
+        return;
+    }
+}
+
+export class VotePublisher {
+    private USER_VOTE_QUEUE = process.env.VOTE_QUEUE || "user-vote";
+
+    async voteAdded(pollId: string, uid: string, optionId: string) {
+        const event = {
+            event: 'add',
+            uid: uid,
+            pollId,
+            optionId
+        }
+        await producer.publishToQueue(this.USER_VOTE_QUEUE, event);
+
+        await redis.publish(`public:poll:${pollId}`, JSON.stringify(event));
+    }
+    async voteRemoved(pollId: string, uid: string, optionId: string) {
+        const event = {
+            event: 'remove',
+            uid: uid,
+            pollId,
+            optionId
+        }
+        await producer.publishToQueue(this.USER_VOTE_QUEUE, event);
+        await redis.publish(`public:poll:${pollId}`, JSON.stringify(event));
     }
 }
 

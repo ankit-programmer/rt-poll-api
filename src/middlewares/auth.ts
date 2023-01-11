@@ -30,3 +30,26 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
     }
 
 }
+
+export function isAnonymous(userPayload: any) {
+    return (userPayload?.firebase?.sign_in_provider != 'anonymous') ? false : true;
+}
+
+export async function validateToken(token: string) {
+    const userPayload = await admin.auth().verifyIdToken(token, false).catch((error) => {
+        switch (error.code) {
+            case 'auth/id-token-expired':
+                throw new Error('Token has expired. Please try with a fresh token.');
+                break;
+
+            default:
+                throw new Error('Invalid token');
+                break;
+        }
+    });
+    return userPayload;
+}
+export async function deleteAnonymousUser(uid: string) {
+    // TODO: ANKIT: IMPORTANT Only allow deletion of anonymous user
+    return admin.auth().deleteUser(uid);
+}

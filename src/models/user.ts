@@ -39,26 +39,34 @@ export async function createUser(id: string, user: User) {
 }
 export class UserVote {
     private voteCollection;
-    private voteRef;
-    constructor(uid: string, pollId: string) {
+    constructor(uid: string) {
         this.voteCollection = userCollection.doc(uid).collection("vote");
-        this.voteRef = this.voteCollection.doc(pollId);
     }
-    async vote(optionId: string) {
-        return await this.voteRef.set({
+    async vote(pollId: string, optionId: string) {
+        return await this.voteCollection.doc(pollId).set({
             'selected': optionId
         })
     }
-    async delete() {
-        return await this.voteRef.delete();
+    async delete(pollId: string) {
+        return await this.voteCollection.doc(pollId).delete();
     }
-    async change(optionId: string) {
-        return await this.voteRef.update({
+    async change(pollId: string, optionId: string) {
+        return await this.voteCollection.doc(pollId).update({
             'selected': optionId
         })
     }
-    async get() {
-        return (await this.voteRef.get()).data();
+    async get(pollId: string) {
+        return (await this.voteCollection.doc(pollId).get()).data();
+    }
+
+    async all() {
+        const myVotes = await this.voteCollection.get();
+        if (myVotes.empty) return [];
+        const votes = new Map<string, any>();
+        myVotes.forEach((vote) => {
+            votes.set(vote.id, vote.data());
+        })
+        return votes;
     }
 }
 

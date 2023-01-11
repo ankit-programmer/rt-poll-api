@@ -1,4 +1,3 @@
-
 import rabbitmqService, { Connection, Channel } from '../configs/rabbitmq';
 import logger from "../logger";
 import { UserVote } from '../models/user';
@@ -20,18 +19,18 @@ async function processMsg(message: any, channel: Channel) {
             case 'add':
                 {
                     const optionId = event?.optionId;
-                    await new UserVote(uid, pollId).vote(optionId).then(value => channel.ack(message)).catch(error => logger.error(error));
+                    await new UserVote(uid).vote(pollId, optionId).then(value => channel.ack(message)).catch(error => logger.error(error));
                     break;
                 }
             case 'remove':
                 {
-                    await new UserVote(uid, pollId).delete().then(value => channel.ack(message)).catch(error => logger.error(error));
+                    await new UserVote(uid).delete(pollId).then(value => channel.ack(message)).catch(error => logger.error(error));
                     break;
                 }
             case 'change':
                 {
                     const optionId = event.something.optionId;
-                    await new UserVote(uid, pollId).change(optionId).then(value => channel.ack(message)).catch(error => logger.error(error));
+                    await new UserVote(uid).change(pollId, optionId).then(value => channel.ack(message)).catch(error => logger.error(error));
                     break;
                 }
             default:

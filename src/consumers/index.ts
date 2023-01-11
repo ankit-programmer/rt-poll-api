@@ -3,10 +3,12 @@ import logger from "../logger";
 import rabbitmqService, { Connection, Channel } from '../configs/rabbitmq';
 import { has } from 'lodash';
 import userVoteConsumer from './user-vote';
+import userMerge from "./user-merge";
 
 // Register Consumers
 const consumers: { [key: string]: IConsumer } = {
-    userVote: userVoteConsumer
+    userVote: userVoteConsumer,
+    userMerge: userMerge
 }
 
 export interface IConsumer {
