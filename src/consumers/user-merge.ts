@@ -25,7 +25,8 @@ async function processMsg(message: any, channel: Channel) {
         const anonymousVotes = await new UserVote(anonymousUid).all();
         // const movedVotePollId = await new UserVote(anonymousUid).move(upgradeUid);
         // logger.info(movedVotePollId);
-        for (const pollId of Object.keys(anonymousVotes)) {
+        for (const pollId of anonymousVotes.keys()) {
+            logger.info(`Moving vote of Poll : ${pollId}`);
             try {
                 await vote.moveVote(pollId, anonymousUid, upgradeUid);
             } catch (error) {

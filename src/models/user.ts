@@ -60,9 +60,9 @@ export class UserVote {
     }
 
     async all() {
-        const myVotes = await this.voteCollection.get();
-        if (myVotes.empty) return [];
         const votes = new Map<string, any>();
+        const myVotes = await this.voteCollection.get();
+        if (myVotes.empty) return votes;
         myVotes.forEach((vote) => {
             votes.set(vote.id, vote.data());
         })

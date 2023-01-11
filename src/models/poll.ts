@@ -128,6 +128,13 @@ export class CachedPoll {
                     return target[prop](...arguments);
                 }
                 break;
+            case "movePoll":
+                return async function (fromUid: string, toUid: string) {
+                    const cacheKey = `poll:user:${toUid}`;
+                    redis.del(cacheKey);
+                    return target[prop](...arguments);
+                }
+                break;
             default:
                 return Reflect.get(target, prop, receiver);
                 break;

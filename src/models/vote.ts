@@ -134,15 +134,15 @@ class VoteModel {
         // Add new vote to the poll
     }
 
-    async moveVote(pollId: string, oldUser: string, newUser: string) {
-        const newUserVote = await this.isVoted(pollId, newUser);
-        const selectedOption = await this.removeVote(oldUser, pollId);
+    async moveVote(pollId: string, anonymousUser: string, upgradeUser: string) {
+        const upgradeUserVote = await this.isVoted(pollId, upgradeUser);
+        const selectedOption = await this.removeVote(anonymousUser, pollId);
         if (selectedOption) {
-            await new VotePublisher().voteRemoved(pollId, oldUser, selectedOption);
+            await new VotePublisher().voteRemoved(pollId, anonymousUser, selectedOption);
         }
-        if (!newUserVote && selectedOption) {
-            await this.addVote(newUser, pollId, selectedOption);
-            await new VotePublisher().voteAdded(pollId, newUser, selectedOption);
+        if (!upgradeUserVote && selectedOption) {
+            await this.addVote(upgradeUser, pollId, selectedOption);
+            await new VotePublisher().voteAdded(pollId, upgradeUser, selectedOption);
         }
         return;
     }
